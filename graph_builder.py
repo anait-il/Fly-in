@@ -18,16 +18,32 @@ class Zone:
         return f"Zone({self.name})"
 
 
+class Connection:
+    def __init__(self, data: Dict[str, str | int]) -> None:
+        self.zone_a: str = data['left']
+        self.zone_b: str = data['right']
+        self.max_capacity: int = data['max_capacity']
+    
+    def __repr__(self):
+        return f"connection({self.zone_a}-{self.zone_b})"
+
+    def get_neighboor(self, current: "Connection") -> "Connection":
+        if current == self.zone_a:
+            return self.zone_b
+        return self.zone_a
+
+
 class Graph:
     def __init__(self, data: Dict) -> None:
         self.data: dict = data
         self.graph: dict | None = None
         self.zones: List[Zone] = []
+        self.connections: List[Connection] = []
 
     def create_graph(self) -> None:
         data: Dict = self.data
 
-        connections: list[Dict[str, int | str]] = data['connections']
+        connections: List[Connection] = self.connections
         self.zone_map: Dict[str, Zone] = {zone.name: zone for zone in self.zones}
 
         graph = {}
@@ -35,12 +51,12 @@ class Graph:
             graph[zone] = []
 
         for edge in connections:
-            graph[self.zone_map[edge['left']]].append((self.zone_map[edge['right']], edge['max_capacity']))
-            graph[self.zone_map[edge['right']]].append((self.zone_map[edge['left']], edge['max_capacity']))
+            graph[self.zone_map[edge.zone_a]].append(edge)
+            graph[self.zone_map[edge.zone_b]].append(edge)
 
         self.graph = graph
 
-    def ceate_zones(self) -> None:
+    def create_zones(self) -> None:
         for key, value in self.data['zones'].items():
             meta = value['meta']
             self.zones.append(Zone(key,
@@ -50,6 +66,14 @@ class Graph:
                                    meta['color'],
                                    value['coordinate']))
 
+    def create_connection(self) -> None:
+        for con in self.data['connections']:
+            self.connections.append(Connection(con))
+
     def get_zones(self) -> None:
         for zone in self.zones:
             print(zone.name, zone.coordinate, zone.color, zone.kind, zone.max_drones, zone.zone)
+    
+    def create_zone_and_connection(self) -> None:
+        self.create_zones()
+        self.create_connection()

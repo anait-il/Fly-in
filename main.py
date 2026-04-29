@@ -13,11 +13,12 @@ if __name__ == "__main__":
         config.validate()
 
         map = Graph(config.data)
-        map.ceate_zones()
+        map.create_zone_and_connection()
         map.create_graph()
-        for a, b in map.graph.items():
-            print(a, b)
+        pprint(map.graph)
     except ParserError as e:
         print("[Error]:", e)
+    # except ValueError:
+    #     print('why')
     except OSError as e:
         print(f"[File Error]: {e}")

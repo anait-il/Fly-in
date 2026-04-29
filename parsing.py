@@ -35,12 +35,14 @@ class Parser:
             }
         else:
             meta = meta.strip("[]").strip()
+            meta = meta.lower()
             for item in meta.split():
                 key, value = item.split('=', 1)
                 if key in meta_dict:
                     raise ParserError(f"Duplicate metadata in line [{line}]")
                 if key not in default_values:
-                    raise ParserError(f"invalid metadata [{item: meta['item']}]")
+                    print(key, value)
+                    raise ParserError(f"invalid metadata [{item}]")
                 meta_dict[key.lower()] = value.lower()
 
             data = {
@@ -79,6 +81,7 @@ class Parser:
             meta = "max_link_capacity=1"
         else:
             meta = meta.strip("[]").strip()
+            meta = meta.lower()
             if meta.split('=', 1)[0] not in meta_default:
                 raise ParserError(f"invalid meta data in line [{line}]")
         value = meta.split("=", 1)[1]
