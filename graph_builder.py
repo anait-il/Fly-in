@@ -10,12 +10,23 @@ class Zone:
         self.max_drones: int = max_drones
         self.color: str = color
         self.coordinate: Tuple[int, int] = coordinate
-    
+        self.cost: int = self.set_cost(zone)
+
     def __str__(self) -> str:
         return f"Zone({self.name})"
     
     def __repr__(self):
         return f"Zone({self.name})"
+    
+    def set_cost(self, zone_type: str) -> int:
+        if zone_type == "normal":
+            return 1
+
+        if zone_type == "priority":
+            return 0
+
+        if zone_type == "restricted":
+            return 2
 
 
 class Connection:
@@ -27,8 +38,8 @@ class Connection:
     def __repr__(self):
         return f"connection({self.zone_a}-{self.zone_b})"
 
-    def get_neighboor(self, current: "Connection") -> "Connection":
-        if current == self.zone_a:
+    def get_other(self, current: Zone) -> str:
+        if current.name == self.zone_a:
             return self.zone_b
         return self.zone_a
 
@@ -72,8 +83,11 @@ class Graph:
 
     def get_zones(self) -> None:
         for zone in self.zones:
-            print(zone.name, zone.coordinate, zone.color, zone.kind, zone.max_drones, zone.zone)
+            print(zone.name, zone.coordinate, zone.color, zone.kind, zone.max_drones, zone.zone, zone.cost)
     
     def create_zone_and_connection(self) -> None:
         self.create_zones()
         self.create_connection()
+
+    def check_graph(self) -> bool:
+        print(self.connections)
