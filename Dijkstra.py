@@ -2,12 +2,13 @@ from graph_builder import Graph, Zone, Connection
 from typing import List, Dict, Tuple
 import heapq
 from itertools import count
-import random
+from pprint import pprint
 
 
 class Dijkstra:
+
     def __init__(self, graph: Graph) -> None:
-        self.path = None
+        self.path: List[Zone] = []
         self.graph: Dict[Zone, List[Connection]] = graph.graph
         self.ograph: Graph = graph
         self.map: Dict[str, Zone] = {zone.kind: zone for zone in self.graph}
@@ -19,6 +20,8 @@ class Dijkstra:
         heapq.heapify(heap)
         privous: Dict = {}
         unique: int = count()
+        costs = {zone: float("infinity") for zone in self.graph}
+        costs[self.map['start_hub']] = 0
 
         def get_neighbors(zone: Zone) -> None:
             neighbors: List = []
@@ -35,19 +38,19 @@ class Dijkstra:
             current.visited = True
             neighbors: List = get_neighbors(current)
             for neighbor in neighbors:
-                heapq.heappush(heap, ((neighbor.cost + current.cost),
+                heapq.heappush(heap, ((neighbor.cost + costs[current]),
                                       next(unique),
                                       neighbor))
-                new_cost = neighbor.cost + current.cost
-                if new_cost < (privous[neighbor].cost + neighbor.cost):
+                new_cost = neighbor.cost + costs[current]
+                if new_cost < costs[neighbor]:
                     privous[neighbor] = current
-        
+                    costs[neighbor] = new_cost
 
             if current is self.map['end_hub']:
                 break
-        from pprint import pprint
+
         current = self.map['end_hub']
-        self.path = []
+        print(privous)
         while current is not None:
             self.path.append(current)
             current = privous.get(current)
