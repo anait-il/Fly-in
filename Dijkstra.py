@@ -28,7 +28,7 @@ class Dijkstra:
             for con in self.graph[zone]:
                 other = con.get_other(zone)
                 other = self.ograph.zone_map[other]
-                if other.kind == 'blocked' or other.visited:
+                if other.kind == 'blocked':
                     continue
                 neighbors.append(other)
             return neighbors
@@ -38,11 +38,12 @@ class Dijkstra:
             current.visited = True
             neighbors: List = get_neighbors(current)
             for neighbor in neighbors:
-                heapq.heappush(heap, ((neighbor.cost + costs[current]),
-                                      next(unique),
-                                      neighbor))
                 new_cost = neighbor.cost + costs[current]
+
                 if new_cost < costs[neighbor]:
+                    heapq.heappush(heap, (new_cost,
+                                        next(unique),
+                                        neighbor))
                     privous[neighbor] = current
                     costs[neighbor] = new_cost
 
