@@ -11,6 +11,7 @@ class Zone:
         self.color: str = color
         self.coordinate: Tuple[int, int] = coordinate
         self.cost: int = self.set_cost(zone)
+        self.visited: bool = False
 
     def __str__(self) -> str:
         return f"Zone({self.name})"

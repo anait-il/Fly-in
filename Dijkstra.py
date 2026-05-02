@@ -25,21 +25,31 @@ class Dijkstra:
             for con in self.graph[zone]:
                 other = con.get_other(zone)
                 other = self.ograph.zone_map[other]
-                if other.kind == 'blocked':
+                if other.kind == 'blocked' or other.visited:
                     continue
                 neighbors.append(other)
             return neighbors
 
         while heap:
             _, _, current = heapq.heappop(heap)
+            current.visited = True
             neighbors: List = get_neighbors(current)
             for neighbor in neighbors:
                 heapq.heappush(heap, ((neighbor.cost + current.cost),
                                       next(unique),
                                       neighbor))
-            privous[heap[0]] = current
+                new_cost = neighbor.cost + current.cost
+                if new_cost < (privous[neighbor].cost + neighbor.cost):
+                    privous[neighbor] = current
+        
 
             if current is self.map['end_hub']:
                 break
-
-        print(f'the path is : {privous}')                   
+        from pprint import pprint
+        current = self.map['end_hub']
+        self.path = []
+        while current is not None:
+            self.path.append(current)
+            current = privous.get(current)
+        self.path.reverse()
+        pprint(f'the path is : {self.path}')                   
