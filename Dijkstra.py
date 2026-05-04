@@ -1,5 +1,6 @@
 from graph_builder import Graph, Zone, Connection
-from typing import List, Dict, Tuple
+from parsing import ParserError
+from typing import List, Dict
 import heapq
 from itertools import count
 from pprint import pprint
@@ -28,7 +29,7 @@ class Dijkstra:
             for con in self.graph[zone]:
                 other = con.get_other(zone)
                 other = self.ograph.zone_map[other]
-                if other.kind == 'blocked':
+                if other.zone == 'blocked':
                     continue
                 neighbors.append(other)
             return neighbors
@@ -37,7 +38,6 @@ class Dijkstra:
             _, _, current = heapq.heappop(heap)
             neighbors: List = get_neighbors(current)
             for neighbor in neighbors:
-                print(neighbor)
                 new_cost = neighbor.cost + costs[current]
 
                 if new_cost < costs[neighbor]:
@@ -46,10 +46,14 @@ class Dijkstra:
                                         neighbor))
                     privous[neighbor] = current
                     costs[neighbor] = new_cost
+            
+            if current == self.map['end_hub']:
+                break
 
+        if self.map['end_hub'] not in privous:
+            raise ParserError('No path exists to goal — network is disconnected!')
         current = self.map['end_hub']
         while current is not None:
             self.path.append(current)
             current = privous.get(current)
-        self.path.reverse()
-        pprint(f'the path is : {self.path}')                   
+        self.path.reverse()                
