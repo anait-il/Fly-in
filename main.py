@@ -10,7 +10,7 @@ if __name__ == "__main__":
     config = Parser()
     try:
 
-        config.load_config("02_simple_fork.txt")
+        config.load_config("01_dead_end_trap.txt")
         config.validate()
 
         map = Graph(config.data)

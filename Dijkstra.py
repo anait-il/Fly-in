@@ -35,9 +35,9 @@ class Dijkstra:
 
         while heap:
             _, _, current = heapq.heappop(heap)
-            current.visited = True
             neighbors: List = get_neighbors(current)
             for neighbor in neighbors:
+                print(neighbor)
                 new_cost = neighbor.cost + costs[current]
 
                 if new_cost < costs[neighbor]:
@@ -47,11 +47,7 @@ class Dijkstra:
                     privous[neighbor] = current
                     costs[neighbor] = new_cost
 
-            if current is self.map['end_hub']:
-                break
-
         current = self.map['end_hub']
-        print(privous)
         while current is not None:
             self.path.append(current)
             current = privous.get(current)

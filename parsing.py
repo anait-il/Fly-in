@@ -23,6 +23,7 @@ class Parser:
     @staticmethod
     def zone_meta_split(match: Match, line: str, nb_drones: int) -> dict:
         default_values = ("color", 'max_drones', 'zone')
+        default_meta = ('normal', 'blocked', 'restricted', 'priority')
         data: dict = {}
         meta_dict: dict = {}
 
@@ -55,6 +56,9 @@ class Parser:
             data['color'] = 'none'
         if not data['zone']:
             data['zone'] = 'normal'
+        else:
+            if data['zone'] not in default_meta:
+                raise ParserError(f'invalid metadata in line {line}')
         if not data['max_drones']:
             if match.group('type').lower() in ('end_hub', 'start_hub'):
                 data['max_drones'] = nb_drones
