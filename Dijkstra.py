@@ -46,7 +46,7 @@ class Dijkstra:
                                         neighbor))
                     privous[neighbor] = current
                     costs[neighbor] = new_cost
-            
+
             if current == self.map['end_hub']:
                 break
 

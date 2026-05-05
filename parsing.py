@@ -74,6 +74,8 @@ class Parser:
         if match.group('type').lower() == 'end_hub' or match.group('type').lower() == 'start_hub':
             if data['max_drones'] < nb_drones:
                 raise ParserError("start zone / end zone can't handle all drones in nb_drones")
+            if data['zone'] == 'blocked':
+                raise ParserError("start/end zone can't be blocked")
         return data
 
     @staticmethod
@@ -232,13 +234,13 @@ class Parser:
             for edge in data:
                 a, b, meta = edge
                 if a not in self.zones:
-                    raise ParserError(f"zone '{a}' in connection '{a}-{b}' not found")
+                    raise ParserError(f"zone '{a}' in [connection: {a}-{b}] not found")
                 if b not in self.zones:
-                    raise ParserError(f"zone '{b}' in connection '{a}-{b}' not found")
+                    raise ParserError(f"zone '{b}' in [connection: {a}-{b}] not found")
                 if a == b:
                     raise ParserError(f"Invalid Connection (not allowed): {a}-{b}")
-                if (a, b) in edges or (b, a) in edges:
-                    raise ParserError(f"Duplicat connection between {a} and {b}")
+                if {'left': a, 'right': b, 'max_capacity': int(meta.split('=')[1])} in edges or {'left': b, 'right': a, 'max_capacity': int(meta.split('=')[1])} in edges:
+                    raise ParserError(f"Duplicat connection between '{a}' and '{b}'")
                 edges.append({
                     'left': a,
                     'right': b,
