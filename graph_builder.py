@@ -37,6 +37,7 @@ class Connection:
     def __init__(self, data: Dict[str, str | int]) -> None:
         self.zone_a: str = data['left']
         self.zone_b: str = data['right']
+        self.name: str = f"{self.zone_a}-{self.zone_b}"
         self.max_capacity: int = data['max_capacity']
         self.drones_in_connection = []
     def in_full(self):
@@ -82,6 +83,8 @@ class Graph:
                                    meta['max_drones'],
                                    meta['color'],
                                    value['coordinate']))
+        self.end: Zone = next((zone for zone in self.zone if zone.kind == 'end_hub'))
+        self.start: Zone = next((zone for zone in self.zone if zone.kind == 'start_hub'))
 
     def create_connection(self) -> None:
         for con in self.data['connections']:
@@ -97,3 +100,8 @@ class Graph:
 
     def check_graph(self) -> bool:
         print(self.connections)
+    
+    def get_connection(self, zone1: Zone, zone2: Zone) -> None:
+        return next((connection for connection in self.connections if self.name == f"{zone1.name}-{zone2.name}"))
+
+    

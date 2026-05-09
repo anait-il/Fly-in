@@ -6,8 +6,10 @@ class Drone:
     def __init__(self, id: int):
         self.id: int = id
         self.path: List = []
-        self.position: Zone = self.path[0]
+        self.position: Zone | None = None
+        self.in_fly: Connection | None = None
         self.is_finish: bool = False
+        self.waiting: bool = False
 
 
 class Simulation:
@@ -19,6 +21,7 @@ class Simulation:
     def set_paths(self):
         for i, drone in enumerate(self.drones):
             drone.path = self.paths[i % len(self.paths)]
+            drone.position = self.graph.start
 
     def create_drones(self) -> None:
         drones = [Drone(i+1) for i in range(self.graph.data['nb_drones'])]
@@ -31,16 +34,37 @@ class Simulation:
             next_position = drone.path[1]
             if next_position.is_full():
                 continue
-            if self.graph.data[next_position].is_full():
+            if self.graph.get_connection(drone.position,
+                                         next_position).is_full():
                 continue
+            if next_position == self.graph.end:
+                drone.is_finish = True
+                continue
+
+            if drone.position and drone.position != self.graph.start:
+                drone.position.drones_in_zone.remove(drone)
+
             if next_position.zone == 'restricted':
-                drone.position = self.graph.data[next_position]
+                if drone.waiting:
+                    drone.position = next_position
+                    drone.path.pop(1)
+                    drone.in_fly = None
+                    drone.waiting = False
+                else:
+                    drone.waiting = True
+                    next_position.drone_in_zone.append(drone)
+                    drone.in_fly = self.graph.get_connection(drone.position,
+                                                               next_position)
+                    drone.position = None
+                    continue
             else:
                 drone.position = next_position
+                next_position.drone_in_zone.append(drone)
+                self.graph.get_connection(drone.position, next_position).drone_in_connection.append(drone)
                 drone.path.pop(1)
-            next_position.drone_in_zone.append(drone)
-            self.graph.graph[next_position].drone_in_connection.append(drone)
 
     def execute(self) -> None:
+        self.create_drones()
+        self.set_paths()
         while not all(drone.is_finish for drone in self.drones):
             self.run_turns()

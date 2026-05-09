@@ -45,7 +45,6 @@ class Simulation:
                 self.move_drone()
 
 
-            
     def run_turns(self):
         self.create_drones()
         paths = [["s1", "z1"], ["s1", "z2"], ["s1", "z3"], ["s1", "z4"]]
