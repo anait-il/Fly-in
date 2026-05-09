@@ -39,7 +39,6 @@ class Dijkstra:
             neighbors: List = get_neighbors(current)
             for neighbor in neighbors:
                 new_cost = neighbor.cost + costs[current]
-
                 if new_cost < costs[neighbor]:
                     heapq.heappush(heap, (new_cost,
                                         next(unique),
@@ -56,4 +55,4 @@ class Dijkstra:
         while current is not None:
             self.path.append(current)
             current = privous.get(current)
-        self.path.reverse()                
+        self.path.reverse()           

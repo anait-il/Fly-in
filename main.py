@@ -4,7 +4,7 @@ from pprint import pprint
 from matplotlib.colors import CSS4_COLORS
 from graph_builder import Graph
 from Dijkstra import Dijkstra
-
+from test import Simulation
 
 if __name__ == "__main__":
     config = Parser()
@@ -22,6 +22,8 @@ if __name__ == "__main__":
         algo = Dijkstra(map)
         algo.shortest_path()
 
+        sim = Simulation(map, algo)
+        sim.run_turns()
     except ParserError as e:
         print("[Error]:", e)
 

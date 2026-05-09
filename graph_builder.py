@@ -12,7 +12,10 @@ class Zone:
         self.coordinate: Tuple[int, int] = coordinate
         self.cost: int = self.set_cost(zone)
         self.visited: bool = False
+        self.drones_in_zone = []
 
+    def is_full(self):
+        return len(self.drones_in_zone) == self.max_drones
     def __str__(self) -> str:
         return f"Zone({self.name})"
     
@@ -35,7 +38,9 @@ class Connection:
         self.zone_a: str = data['left']
         self.zone_b: str = data['right']
         self.max_capacity: int = data['max_capacity']
-    
+        self.drones_in_connection = []
+    def in_full(self):
+        return len(self.drones_in_connection) == self.max_capacity
     def __repr__(self):
         return f"connection({self.zone_a}-{self.zone_b})"
 
