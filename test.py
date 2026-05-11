@@ -10,6 +10,9 @@ class Drone:
         self.in_fly: Connection | None = None
         self.is_finish: bool = False
         self.waiting: bool = False
+    
+    def __str__(self) -> None:
+        return f"D{self.id}"
 
 
 class Simulation:
@@ -27,13 +30,29 @@ class Simulation:
         drones = [Drone(i+1) for i in range(self.graph.data['nb_drones'])]
         self.drones = drones
 
+    def move_to_restricted(self, drone: Drone, nect) -> None:
+            if drone.waiting:
+                drone.position = next_position
+                drone.path.pop(1)
+                drone.in_fly = None
+                drone.waiting = False
+            else:
+                drone.waiting = True
+                next_position.drone_in_zone.append(drone)
+                drone.in_fly = self.graph.get_connection(drone.position,
+                                                            next_position)
+                drone.position = None
+
     def run_turns(self) -> None:
         for drone in self.drones:
+
             if drone.is_finish:
                 continue
+            print(drone.path)
             next_position = drone.path[1]
             if next_position.is_full():
                 continue
+            print(drone, drone.position, next_position)
             if self.graph.get_connection(drone.position,
                                          next_position).is_full():
                 continue
@@ -58,13 +77,15 @@ class Simulation:
                     drone.position = None
                     continue
             else:
+                self.graph.get_connection(drone.position, next_position).drones_in_connection.append(drone)
                 drone.position = next_position
-                next_position.drone_in_zone.append(drone)
-                self.graph.get_connection(drone.position, next_position).drone_in_connection.append(drone)
+                next_position.drones_in_zone.append(drone)
                 drone.path.pop(1)
+            # print(drone, drone.position)
 
     def execute(self) -> None:
         self.create_drones()
         self.set_paths()
+        self.run_turns()
         while not all(drone.is_finish for drone in self.drones):
             self.run_turns()

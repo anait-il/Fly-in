@@ -20,10 +20,10 @@ if __name__ == "__main__":
 
         #get the shortest path
         algo = Dijkstra(map)
-        algo.shortest_path()
+        algo.get_multi_paths()
 
-        sim = Simulation(map, algo)
-        sim.run_turns()
+        sim = Simulation(map, algo.paths)
+        sim.execute()
     except ParserError as e:
         print("[Error]:", e)
 

@@ -1,4 +1,3 @@
-import parsing
 from typing import List, Dict, Tuple
 
 
@@ -40,8 +39,9 @@ class Connection:
         self.name: str = f"{self.zone_a}-{self.zone_b}"
         self.max_capacity: int = data['max_capacity']
         self.drones_in_connection = []
-    def in_full(self):
+    def is_full(self):
         return len(self.drones_in_connection) == self.max_capacity
+
     def __repr__(self):
         return f"connection({self.zone_a}-{self.zone_b})"
 
@@ -83,8 +83,8 @@ class Graph:
                                    meta['max_drones'],
                                    meta['color'],
                                    value['coordinate']))
-        self.end: Zone = next((zone for zone in self.zone if zone.kind == 'end_hub'))
-        self.start: Zone = next((zone for zone in self.zone if zone.kind == 'start_hub'))
+        self.end: Zone = next((zone for zone in self.zones if zone.kind == 'end_hub'))
+        self.start: Zone = next((zone for zone in self.zones if zone.kind == 'start_hub'))
 
     def create_connection(self) -> None:
         for con in self.data['connections']:
@@ -102,6 +102,4 @@ class Graph:
         print(self.connections)
     
     def get_connection(self, zone1: Zone, zone2: Zone) -> None:
-        return next((connection for connection in self.connections if self.name == f"{zone1.name}-{zone2.name}"))
-
-    
+        return next((connection for connection in self.connections if connection.name == f"{zone1.name}-{zone2.name}"))
