@@ -4,6 +4,7 @@ from graph_builder import Zone, Connection, Graph
 
 class Drone:
     def __init__(self, id: int):
+        self.index: int = 0
         self.id: int = id
         self.path: List = []
         self.position: Zone | None = None
@@ -12,6 +13,9 @@ class Drone:
         self.waiting: bool = False
     
     def __str__(self) -> None:
+        return f"D{self.id}"
+
+    def __repr__(self) -> None:
         return f"D{self.id}"
 
 
@@ -30,62 +34,68 @@ class Simulation:
         drones = [Drone(i+1) for i in range(self.graph.data['nb_drones'])]
         self.drones = drones
 
-    def move_to_restricted(self, drone: Drone, nect) -> None:
-            if drone.waiting:
-                drone.position = next_position
-                drone.path.pop(1)
-                drone.in_fly = None
-                drone.waiting = False
+    def move_to_restricted(self, next_position: Zone, connection: Connection) -> None:
+            if self.waiting:
+                self.position = next_position
+                self.index += 1
+                self.in_fly = None
+                connection.leave(self)
+                self.waiting = False
             else:
-                drone.waiting = True
-                next_position.drone_in_zone.append(drone)
-                drone.in_fly = self.graph.get_connection(drone.position,
-                                                            next_position)
-                drone.position = None
+                self.waiting = True
+                next_position.enter(self)
+                self.in_fly = connection
+                connection.enter(self)
+                self.position.leave(self)
+                self.position = None
+
+    def position(self) -> str:
+        return (self.position if self.position else self.in_fly)
+
+    def move_drone(self, next_position: Zone, connection: Connection) -> None:
+        self.position.leave(self)
+        self.position = next_position
+        next_position.enter(self)
+        connection.enter(self)
+        self.index += 1
 
     def run_turns(self) -> None:
+        result: str = ""
+
         for drone in self.drones:
 
             if drone.is_finish:
                 continue
-            print(drone.path)
-            next_position = drone.path[1]
-            if next_position.is_full():
+
+            next_position = drone.path[drone.index + 1]
+            connection: Connection = self.graph.get_connection(drone.position,
+                                         next_position)
+
+            if next_position.is_full() or connection.is_full():
+                result += f"{drone.id}<{drone.position()}>"
                 continue
-            print(drone, drone.position, next_position)
-            if self.graph.get_connection(drone.position,
-                                         next_position).is_full():
-                continue
+
             if next_position == self.graph.end:
                 drone.is_finish = True
-                continue
-
-            if drone.position and drone.position != self.graph.start:
-                drone.position.drones_in_zone.remove(drone)
-
-            if next_position.zone == 'restricted':
-                if drone.waiting:
-                    drone.position = next_position
-                    drone.path.pop(1)
-                    drone.in_fly = None
-                    drone.waiting = False
-                else:
-                    drone.waiting = True
-                    next_position.drone_in_zone.append(drone)
-                    drone.in_fly = self.graph.get_connection(drone.position,
-                                                               next_position)
-                    drone.position = None
-                    continue
+                result += f"{drone.id}<{drone.position()}>"
             else:
-                self.graph.get_connection(drone.position, next_position).drones_in_connection.append(drone)
-                drone.position = next_position
-                next_position.drones_in_zone.append(drone)
-                drone.path.pop(1)
-            # print(drone, drone.position)
+                if drone.position and drone.position != self.graph.start:
+                    drone.position.drones_in_zone.remove(drone)
+
+                if next_position.zone == 'restricted':
+                    drone.move_to_restricted(next_position, connection)
+
+                else:
+                    self.move_drone(next_position, connection)
+                    connection.drones_in_connection.append(drone)
+                    drone.position = next_position
+                    next_position.drones_in_zone.append(drone)
+                    drone.index += 1
+            print(drone, drone.position, end=" ")
+        print()
 
     def execute(self) -> None:
         self.create_drones()
         self.set_paths()
-        self.run_turns()
-        while not all(drone.is_finish for drone in self.drones):
+        while not all((drone.is_finish for drone in self.drones)):
             self.run_turns()

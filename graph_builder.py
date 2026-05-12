@@ -30,6 +30,13 @@ class Zone:
 
         if zone_type == "restricted":
             return 2
+    
+    from test import Drone
+    def enter(self, drone: Drone) -> None:
+        self.drones_in_zone.append(drone)
+
+    def leave(self, drone: Drone) -> None:
+        self.drones_in_zone.remove(drone)
 
 
 class Connection:
@@ -39,6 +46,14 @@ class Connection:
         self.name: str = f"{self.zone_a}-{self.zone_b}"
         self.max_capacity: int = data['max_capacity']
         self.drones_in_connection = []
+
+    from test import Drone
+    def enter(self, drone: Drone) -> None:
+        self.drones_in_connection.append(drone)
+
+    def leave(self, drone: Drone) -> None:
+        self.drones_in_connection.remove(drone)
+
     def is_full(self):
         return len(self.drones_in_connection) == self.max_capacity
 
