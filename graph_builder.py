@@ -1,5 +1,9 @@
-from typing import List, Dict, Tuple
+from __future__ import annotations
+from typing import List, Dict, Tuple, TYPE_CHECKING
 
+
+if TYPE_CHECKING:
+    from test import Drone
 
 class Zone:
     def __init__(self, name: str, kind: str, zone: str, max_drones: int, color: str, coordinate: Tuple[int, int]) -> None:
@@ -31,7 +35,6 @@ class Zone:
         if zone_type == "restricted":
             return 2
     
-    from test import Drone
     def enter(self, drone: Drone) -> None:
         self.drones_in_zone.append(drone)
 
@@ -47,7 +50,6 @@ class Connection:
         self.max_capacity: int = data['max_capacity']
         self.drones_in_connection = []
 
-    from test import Drone
     def enter(self, drone: Drone) -> None:
         self.drones_in_connection.append(drone)
 

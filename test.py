@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List
 from graph_builder import Zone, Connection, Graph
 
 
@@ -34,30 +34,30 @@ class Simulation:
         drones = [Drone(i+1) for i in range(self.graph.data['nb_drones'])]
         self.drones = drones
 
-    def move_to_restricted(self, next_position: Zone, connection: Connection) -> None:
-            if self.waiting:
-                self.position = next_position
-                self.index += 1
-                self.in_fly = None
-                connection.leave(self)
-                self.waiting = False
+    def move_to_restricted(drone, next_position: Zone, connection: Connection) -> None:
+            if drone.waiting:
+                drone.position = next_position
+                drone.index += 1
+                drone.in_fly = None
+                connection.leave(drone)
+                drone.waiting = False
             else:
-                self.waiting = True
-                next_position.enter(self)
-                self.in_fly = connection
-                connection.enter(self)
-                self.position.leave(self)
-                self.position = None
+                drone.waiting = True
+                next_position.enter(drone)
+                drone.in_fly = connection
+                connection.enter(drone)
+                drone.position.leave(drone)
+                drone.position = None
 
-    def position(self) -> str:
+    def drone_position(self) -> str:
         return (self.position if self.position else self.in_fly)
 
-    def move_drone(self, next_position: Zone, connection: Connection) -> None:
-        self.position.leave(self)
-        self.position = next_position
-        next_position.enter(self)
-        connection.enter(self)
-        self.index += 1
+    def move_drone(drone, next_position: Zone, connection: Connection) -> None:
+        drone.position.leave(drone)
+        drone.position = next_position
+        next_position.enter(drone)
+        connection.enter(drone)
+        drone.index += 1
 
     def run_turns(self) -> None:
         result: str = ""
@@ -72,12 +72,12 @@ class Simulation:
                                          next_position)
 
             if next_position.is_full() or connection.is_full():
-                result += f"{drone.id}<{drone.position()}>"
+                result += f"{drone.id}<{drone.drone_position()}>"
                 continue
 
             if next_position == self.graph.end:
                 drone.is_finish = True
-                result += f"{drone.id}<{drone.position()}>"
+                result += f"{drone.id}<{drone.drone_position()}>"
             else:
                 if drone.position and drone.position != self.graph.start:
                     drone.position.drones_in_zone.remove(drone)
