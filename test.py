@@ -1,5 +1,14 @@
 from typing import List
 from graph_builder import Zone, Connection, Graph
+from enum import Enum
+
+
+class Color(Enum):
+    RED = "\x1b[31m"
+    BLUE = "\x1b[34m"
+    RESET = "\x1b[0m"
+    GREEN = "\x1b[32m"
+    YELLOW = "\x1b[33m"
 
 
 class Drone:
@@ -8,10 +17,10 @@ class Drone:
         self.id: int = id
         self.path: List = []
         self.position: Zone | None = None
-        self.in_fly: Connection | None = None
+        self.connection: Connection | None = None
         self.is_finish: bool = False
         self.waiting: bool = False
-    
+
     def __str__(self) -> None:
         return f"D{self.id}"
 
@@ -39,20 +48,20 @@ class Simulation:
             if drone.waiting:
                 drone.position = next_position
                 drone.index += 1
-                drone.in_fly = None
+                drone.connection = None
                 connection.leave(drone)
                 drone.waiting = False
             else:
                 drone.waiting = True
                 next_position.enter(drone)
-                drone.in_fly = connection
+                drone.connection = connection
                 connection.enter(drone)
                 drone.position.leave(drone)
                 drone.position = None
 
     @staticmethod
     def drone_position(drone) -> str:
-        return (drone.position if drone.position else f"<{drone.in_fly}>")
+        return (drone.position if drone.position else f"<{drone.connection}>")
 
     @staticmethod
     def move_drone(drone, next_position: Zone, connection: Connection) -> None:
@@ -60,6 +69,7 @@ class Simulation:
         drone.position = next_position
         drone.position.enter(drone)
         connection.enter(drone)
+        drone.connection = connection
         drone.index += 1
 
     def run_turns(self) -> None:
@@ -71,17 +81,14 @@ class Simulation:
                 continue
 
             next_position = drone.path[drone.index + 1]
-            # print()
-            # print(f"inside turn: {drone}, {drone.index}, {drone.position}, {next_position}, {drone.path[drone.index]}")
             connection: Connection = self.graph.get_connection(drone.position,
                                          next_position)
 
-            if next_position.is_full():
+            if next_position.is_full() or connection.is_full():
                 continue
 
             if next_position == self.graph.end:
                 drone.is_finish = True
-                print('hellp')
                 self.move_drone(drone, next_position, connection)
                 result += f"D{drone.id}-{self.drone_position(drone)} "
 
@@ -94,11 +101,27 @@ class Simulation:
                     self.move_drone(drone, next_position, connection)
 
                 result += f"D{drone.id}-{self.drone_position(drone)} "
+
+        for drone in self.drones:
+            if drone.waiting:
+                continue
+
+            if drone.connection and drone in drone.connection.drones_in_connection:
+                drone.connection.leave(drone)
+
         return result
 
     def execute(self) -> None:
+        color = Color()
+        count: int = 0
+
         self.create_drones()
         self.set_paths()
+        for i, path in enumerate(self.paths, start=1):
+            path = color.value.RED + path + color.value.RESET
+            print(f"path{i}: {path}")
+        print()
         while not all((drone.is_finish for drone in self.drones)):
-            print(self.run_turns())
-            print()
+            count += 1
+            print(self.run_turns(), end="\n\n")
+        print(f"Total Turns: {count}")
