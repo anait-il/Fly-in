@@ -29,6 +29,7 @@ class Simulation:
         for i, drone in enumerate(self.drones):
             drone.path = self.paths[i % len(self.paths)]
             drone.position = self.graph.start
+            drone.position.enter(drone)
 
     def create_drones(self) -> None:
         drones = [Drone(i+1) for i in range(self.graph.data['nb_drones'])]
@@ -49,13 +50,15 @@ class Simulation:
                 drone.position.leave(drone)
                 drone.position = None
 
-    def drone_position(self) -> str:
-        return (self.position if self.position else self.in_fly)
+    @staticmethod
+    def drone_position(drone) -> str:
+        return (drone.position if drone.position else f"<{drone.in_fly}>")
 
+    @staticmethod
     def move_drone(drone, next_position: Zone, connection: Connection) -> None:
         drone.position.leave(drone)
         drone.position = next_position
-        next_position.enter(drone)
+        drone.position.enter(drone)
         connection.enter(drone)
         drone.index += 1
 
@@ -68,34 +71,34 @@ class Simulation:
                 continue
 
             next_position = drone.path[drone.index + 1]
+            # print()
+            # print(f"inside turn: {drone}, {drone.index}, {drone.position}, {next_position}, {drone.path[drone.index]}")
             connection: Connection = self.graph.get_connection(drone.position,
                                          next_position)
 
-            if next_position.is_full() or connection.is_full():
-                result += f"{drone.id}<{drone.drone_position()}>"
+            if next_position.is_full():
                 continue
 
             if next_position == self.graph.end:
                 drone.is_finish = True
-                result += f"{drone.id}<{drone.drone_position()}>"
+                print('hellp')
+                self.move_drone(drone, next_position, connection)
+                result += f"D{drone.id}-{self.drone_position(drone)} "
+
             else:
-                if drone.position and drone.position != self.graph.start:
-                    drone.position.drones_in_zone.remove(drone)
 
                 if next_position.zone == 'restricted':
                     drone.move_to_restricted(next_position, connection)
 
                 else:
-                    self.move_drone(next_position, connection)
-                    connection.drones_in_connection.append(drone)
-                    drone.position = next_position
-                    next_position.drones_in_zone.append(drone)
-                    drone.index += 1
-            print(drone, drone.position, end=" ")
-        print()
+                    self.move_drone(drone, next_position, connection)
+
+                result += f"D{drone.id}-{self.drone_position(drone)} "
+        return result
 
     def execute(self) -> None:
         self.create_drones()
         self.set_paths()
         while not all((drone.is_finish for drone in self.drones)):
-            self.run_turns()
+            print(self.run_turns())
+            print()
