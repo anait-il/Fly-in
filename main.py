@@ -10,7 +10,7 @@ if __name__ == "__main__":
     config = Parser()
     try:
         #parsing part 
-        config.load_config("01_dead_end_trap.txt")
+        config.load_config("config.txt")
         config.validate()
 
         #create graph

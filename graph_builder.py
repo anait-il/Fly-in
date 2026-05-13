@@ -20,10 +20,10 @@ class Zone:
     def is_full(self):
         return len(self.drones_in_zone) == self.max_drones
     def __str__(self) -> str:
-        return f"Zone({self.name})"
+        return f"{self.name}"
     
     def __repr__(self):
-        return f"Zone({self.name})"
+        return f"{self.name}"
     
     def set_cost(self, zone_type: str) -> int:
         if zone_type == "normal":
@@ -60,7 +60,7 @@ class Connection:
         return len(self.drones_in_connection) == self.max_capacity
 
     def __repr__(self):
-        return f"connection({self.zone_a}-{self.zone_b})"
+        return f"{self.zone_a}-{self.zone_b}"
 
     def get_other(self, current: Zone) -> str:
         if current.name == self.zone_a:

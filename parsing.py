@@ -214,7 +214,7 @@ class Parser:
                 value['coordinate'] = (x, y)
                 meta = value['meta']
                 color = meta['color']
-                if not color.lower() in CSS4_COLORS:
+                if not color.lower() in CSS4_COLORS and color.lower() != "rainbow":
                     if color == 'none':
                         pass
                     else:

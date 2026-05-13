@@ -44,24 +44,30 @@ class Simulation:
         drones = [Drone(i+1) for i in range(self.graph.data['nb_drones'])]
         self.drones = drones
 
+    @staticmethod
     def move_to_restricted(drone, next_position: Zone, connection: Connection) -> None:
             if drone.waiting:
                 drone.position = next_position
                 drone.index += 1
                 drone.connection = None
                 connection.leave(drone)
+                drone.position.leave(drone)
+                print('drone in zone',drone,  next_position.drones_in_zone)
                 drone.waiting = False
             else:
                 drone.waiting = True
                 next_position.enter(drone)
                 drone.connection = connection
                 connection.enter(drone)
+                print(drone)
                 drone.position.leave(drone)
                 drone.position = None
 
     @staticmethod
     def drone_position(drone) -> str:
-        return (drone.position if drone.position else f"<{drone.connection}>")
+        return (drone.position
+                if drone.position
+                else f"<{drone.connection}>")
 
     @staticmethod
     def move_drone(drone, next_position: Zone, connection: Connection) -> None:
@@ -81,11 +87,14 @@ class Simulation:
                 continue
 
             next_position = drone.path[drone.index + 1]
-            connection: Connection = self.graph.get_connection(drone.position,
-                                         next_position)
-
-            if next_position.is_full() or connection.is_full():
-                continue
+            if next_position.zone == 'restricted' and drone.waiting:
+                connection = drone.connection
+            else:
+                connection: Connection = self.graph.get_connection(drone.position,
+                                                                   next_position)
+                if next_position.is_full() or connection.is_full():
+                    print(drone, connection, connection.drones_in_connection)
+                    continue
 
             if next_position == self.graph.end:
                 drone.is_finish = True
@@ -95,7 +104,7 @@ class Simulation:
             else:
 
                 if next_position.zone == 'restricted':
-                    drone.move_to_restricted(next_position, connection)
+                    self.move_to_restricted(drone, next_position, connection)
 
                 else:
                     self.move_drone(drone, next_position, connection)
@@ -112,16 +121,19 @@ class Simulation:
         return result
 
     def execute(self) -> None:
-        color = Color()
         count: int = 0
 
         self.create_drones()
         self.set_paths()
         for i, path in enumerate(self.paths, start=1):
-            path = color.value.RED + path + color.value.RESET
-            print(f"path{i}: {path}")
+            way = ""
+            for zone in path:
+                way += ' -> ' if way else ''
+                way += f"{zone}"
+            way = Color.YELLOW.value + way + Color.RESET.value
+            print(f"path{i}: {way}")
         print()
         while not all((drone.is_finish for drone in self.drones)):
             count += 1
             print(self.run_turns(), end="\n\n")
-        print(f"Total Turns: {count}")
+        print(Color.GREEN.value + f"Total Turns: {count}" + Color.RESET.value)
