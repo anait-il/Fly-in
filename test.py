@@ -20,6 +20,7 @@ class Drone:
         self.connection: Connection | None = None
         self.is_finish: bool = False
         self.waiting: bool = False
+        self.ex: Zone | None = None
 
     def __str__(self) -> None:
         return f"D{self.id}"
@@ -51,15 +52,14 @@ class Simulation:
                 drone.index += 1
                 drone.connection = None
                 connection.leave(drone)
-                drone.position.leave(drone)
-                print('drone in zone',drone,  next_position.drones_in_zone)
+                drone.position.max_drones += 1
+                drone.ex = drone.position
                 drone.waiting = False
             else:
                 drone.waiting = True
                 next_position.enter(drone)
                 drone.connection = connection
                 connection.enter(drone)
-                print(drone)
                 drone.position.leave(drone)
                 drone.position = None
 
@@ -71,6 +71,10 @@ class Simulation:
 
     @staticmethod
     def move_drone(drone, next_position: Zone, connection: Connection) -> None:
+        if drone.ex:
+            drone.ex.max_drones -= 1
+            drone.ex = None
+
         drone.position.leave(drone)
         drone.position = next_position
         drone.position.enter(drone)
@@ -93,7 +97,6 @@ class Simulation:
                 connection: Connection = self.graph.get_connection(drone.position,
                                                                    next_position)
                 if next_position.is_full() or connection.is_full():
-                    print(drone, connection, connection.drones_in_connection)
                     continue
 
             if next_position == self.graph.end:
