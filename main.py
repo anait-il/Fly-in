@@ -4,7 +4,7 @@ from pprint import pprint
 from matplotlib.colors import CSS4_COLORS
 from graph_builder import Graph
 from Dijkstra import Dijkstra
-from test import Simulation
+from simulation import Simulation
 
 if __name__ == "__main__":
     config = Parser()

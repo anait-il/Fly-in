@@ -60,8 +60,8 @@ class Dijkstra:
 
     def get_multi_paths(self) -> None:
         paths: List = []
-        for _ in range(2):
-        # while True:
+        # for _ in range(2):
+        while True:
             self.shortest_path()
             if self.path in paths:
                 break
@@ -70,4 +70,3 @@ class Dijkstra:
                 zone.cost += 2
             self.path = []
         self.paths = paths
-

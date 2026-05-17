@@ -3,7 +3,7 @@ from typing import List, Dict, Tuple, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from test import Drone
+    from simulation import Drone
 
 class Zone:
     def __init__(self, name: str, kind: str, zone: str, max_drones: int, color: str, coordinate: Tuple[int, int]) -> None:

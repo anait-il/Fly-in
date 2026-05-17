@@ -136,7 +136,7 @@ class Parser:
                             r"\s*(?P<name>\w+)\s+"
                             r"(?P<x>-?\d+)\s+"
                             r"(?P<y>-?\d+)\s*"
-                            r"(?:\s+(?P<meta>\[\s*(?:\w+=-?\w+)(?:\s+\w+=-?\w+)*\]))?"
+                            r"(?:(?P<meta>\[\s*(?:\w+=-?[^\s-]+)(?:\s+\w+=-?[^\s-]+)*\s*\]))?"
                         r")\s*$")
 
                     match = re.match(zone_pattern, line)
@@ -158,7 +158,7 @@ class Parser:
                     connection_pattern = (
                         r"(?P<type>\w+):"
                         r"(?P<value>\s*(?P<name1>\w+)-(?P<name2>\w+)\s*"
-                        r"(?:\s+(?P<meta>\[\s*(\w+=-?\w+)(\s+\w+=-?\w+)*\s*\]))?)\s*$")
+                        r"(?:(?P<meta>\[\s*(max_link_capacity=-?\d+)\s*\]))?)\s*$")
 
                     match = re.match(connection_pattern, line)
                     if not match:
@@ -213,7 +213,7 @@ class Parser:
                 y = int(y)
                 value['coordinate'] = (x, y)
                 meta = value['meta']
-                color = meta['color']
+                color = meta['color'].lower()
                 if not color.lower() in CSS4_COLORS and color.lower() != "rainbow":
                     if color == 'none':
                         pass
