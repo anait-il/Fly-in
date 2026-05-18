@@ -46,10 +46,10 @@ class Simulation:
         
 
 
-        for i, drone in enumerate(self.drones):
-            drone.path = self.paths[i % len(self.paths)]
-            drone.position = self.graph.start
-            drone.position.enter(drone)
+        # for i, drone in enumerate(self.drones):
+        #     drone.path = self.paths[i % len(self.paths)]
+        #     drone.position = self.graph.start
+        #     drone.position.enter(drone)
 
         for drone in self.drones:
             paths = {}

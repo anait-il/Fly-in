@@ -1,6 +1,6 @@
 PY = python3
 
-UV = uv run
+UV = uv
 
 MAIN = main.py
 
@@ -11,7 +11,18 @@ FLAGS = --warn-return-any \
 		--check-untyped-defs
 
 run :
-	@$(UV) $(PY) $(MAIN)
+	@$(UV) run $(PY) $(MAIN)
 
 install :
 	@$(UV) sync
+
+debug :
+	@$(UV) run $(PY) -m pdb $(MAIN)
+
+clean :
+	@find . -type d -name "__pycache__" -exec rm -rf {} +
+	@find . -type d -name ".mypy_cache" -exec rm -rf {} +
+
+lint :
+	@flake8 .
+	@mypy .  $(FLAGS)
