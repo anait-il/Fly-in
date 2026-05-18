@@ -11,7 +11,7 @@ class Dijkstra:
     def __init__(self, graph: Graph) -> None:
         self.path: List[Zone] = []
         self.graph: Dict[Zone, List[Connection]] = graph.graph
-        self.ograph: Graph = graph
+        self.object_graph: Graph = graph
         self.map: Dict[str, Zone] = {zone.kind: zone for zone in self.graph}
         self.paths: List[List[Zone]] = []
 
@@ -28,7 +28,7 @@ class Dijkstra:
             neighbors: List = []
             for con in self.graph[zone]:
                 other = con.get_other(zone)
-                other = self.ograph.zone_map[other]
+                other = self.object_graph.zone_map[other]
                 if other.zone == 'blocked':
                     continue
                 neighbors.append(other)
@@ -58,15 +58,24 @@ class Dijkstra:
             current = privous.get(current)
         self.path.reverse()
 
+    def get_connections_from_path(path, connections=[]) -> None:
+        connection: List = []
+        for i in range(len(path)-1):
+            connection.append(object_graph.get_connection(path[i], path[i+1]))
+        connections.append(connection)
+        return connections
+
     def get_multi_paths(self) -> None:
         paths: List = []
-        # for _ in range(2):
+        connections = []
         while True:
             self.shortest_path()
             if self.path in paths:
                 break
             paths.append(self.path)
+            connections = self.get_connections_from_path(self.path)
             for zone in self.path:
                 zone.cost += 2
             self.path = []
         self.paths = paths
+        self.connections = connections

@@ -30,17 +30,27 @@ class Drone:
 
 
 class Simulation:
-    def __init__(self, graph: Graph, paths: List) -> None:
+    def __init__(self, graph: Graph, dijkstra: Dijkstra) -> None:
         self.graph: Graph = graph
         self.drones: List[Drone] = []
-        self.paths: List = paths
+        self.paths: List = dijkstra.paths
+        self.connections_list: List = dijkstra.connections_list
 
     def set_paths(self):
+
+        path_cost: List = []
+        def path_costs() -> None:
+            for path, connections_list in zip(self.paths, self.connections_list):
+                for zone in self.path:
+                    if zone.cost < 
+        
+
+
         for i, drone in enumerate(self.drones):
             drone.path = self.paths[i % len(self.paths)]
             drone.position = self.graph.start
             drone.position.enter(drone)
-        
+
         for drone in self.drones:
             paths = {}
             for path in self.paths:

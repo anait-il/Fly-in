@@ -22,7 +22,7 @@ if __name__ == "__main__":
         algo = Dijkstra(map)
         algo.get_multi_paths()
 
-        sim = Simulation(map, algo.paths)
+        sim = Simulation(map, algo)
         sim.execute()
     except ParserError as e:
         print("[Error]:", e)
