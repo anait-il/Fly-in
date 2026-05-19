@@ -1,6 +1,7 @@
 from typing import List
 from graph_builder import Zone, Connection, Graph
 from enum import Enum
+import Dijkstra
 
 
 class Color(Enum):
@@ -9,6 +10,15 @@ class Color(Enum):
     RESET = "\x1b[0m"
     GREEN = "\x1b[32m"
     YELLOW = "\x1b[33m"
+
+class Path:
+    def __init__(self, path: List[Zone]) -> None:
+        self.path: List[Zone] = path
+        self.cost: int = 0
+        self.drones_in_path: int = 0
+
+    def add_drone(self) -> None:
+        self.drones_in_path += 1
 
 
 class Drone:
@@ -33,30 +43,33 @@ class Simulation:
     def __init__(self, graph: Graph, dijkstra: Dijkstra) -> None:
         self.graph: Graph = graph
         self.drones: List[Drone] = []
-        self.paths: List = dijkstra.paths
-        self.connections_list: List = dijkstra.connections_list
+        self.paths: List[List[Zone]] = self.path_factory(dijkstra.paths)
+        self.connections_list: List[list[Connection]] = dijkstra.connections
 
-    def set_paths(self):
+    def path_factory(self, paths: List[List[Zone]]) -> None:
+        return [Path(path) for path in paths]
 
-        path_cost: List = []
-        def path_costs() -> None:
-            for path, connections_list in zip(self.paths, self.connections_list):
-                for zone in self.path:
-                    if zone.cost < 
-        
+    def path_capacity(self, path: List[Zone], connections: List[Connection]) -> int:
+        cost = min(zone.max_drones for zone in path.path)
+        connection = min(connection.max_capacity for connection in connections)
+        return min(cost, connection)
 
+    def set_paths(self) -> None:
+
+        for path, conn in zip(self.paths, self.connections_list):
+            path.throughput = self.path_capacity(path, conn)
+            path.cost = sum(zone.cost for zone in path.path)
+
+        for drone in self.drones:
+            drone.path = min(self.paths, key=lambda p: (p.cost + (p.drones_in_path / p.throughput)))
+            drone.path.add_drone()
+            drone.position = self.graph.start
+            drone.position.enter(drone)
 
         # for i, drone in enumerate(self.drones):
         #     drone.path = self.paths[i % len(self.paths)]
         #     drone.position = self.graph.start
         #     drone.position.enter(drone)
-
-        for drone in self.drones:
-            paths = {}
-            for path in self.paths:
-                path_cost: int = 0
-                for i, zone in enumerate(path):
-                    if zone.max_drones < 
 
     def create_drones(self) -> None:
         drones = [Drone(i+1) for i in range(self.graph.data['nb_drones'])]
@@ -108,7 +121,7 @@ class Simulation:
             if drone.is_finish:
                 continue
 
-            next_position = drone.path[drone.index + 1]
+            next_position = drone.path.path[drone.index + 1]
             if next_position.zone == 'restricted' and drone.waiting:
                 connection = drone.connection
             else:
@@ -152,7 +165,7 @@ class Simulation:
         self.set_paths()
         for i, path in enumerate(self.paths, start=1):
             way = ""
-            for zone in path:
+            for zone in path.path:
                 way += ' -> ' if way else ''
                 way += f"{zone}"
             way = Color.YELLOW.value + way + Color.RESET.value

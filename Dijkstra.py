@@ -58,10 +58,10 @@ class Dijkstra:
             current = privous.get(current)
         self.path.reverse()
 
-    def get_connections_from_path(path, connections=[]) -> None:
+    def get_connections_from_path(self, path, connections=[]) -> None:
         connection: List = []
         for i in range(len(path)-1):
-            connection.append(object_graph.get_connection(path[i], path[i+1]))
+            connection.append(self.object_graph.get_connection(path[i], path[i+1]))
         connections.append(connection)
         return connections
 
