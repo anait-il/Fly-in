@@ -13,7 +13,8 @@ FLAGS = --warn-return-any \
 		--check-untyped-defs
 
 run :
-	@$(UV) run $(PY) $(MAIN) $(MAP)
+	@echo "MAP is: $(MAP)\n"
+	@MAP=$(MAP) $(UV) run $(PY) $(MAIN)
 
 install :
 	@$(UV) sync

@@ -61,8 +61,8 @@ class Parser:
         else:
             if data['zone'] not in default_meta:
                 raise ParserError(f"unknown zone type \
-                                    {data['zone']} at line {line_number}: \
-                                    '{line}'")
+{data['zone']} at line {line_number}: \
+'{line}'")
         if not data['max_drones']:
             if match.group('type').lower() in ('end_hub', 'start_hub'):
                 data['max_drones'] = nb_drones
@@ -74,14 +74,15 @@ class Parser:
                 if data['max_drones'] <= 0:
                     raise ValueError()
             except ValueError:
-                raise ParserError(f"expected integer for max_drones got \
-                                    '{data['max_drones']}' at line {line_number}: \
-                                    max_drones must be positive-integer")
+                raise ParserError(f"expected positive-integer for max_drones got \
+'{data['max_drones']}' at line {line_number}")
         if match.group('type').lower() == 'end_hub' or match.group('type').lower() == 'start_hub':
             if data['max_drones'] < nb_drones:
-                raise ParserError(f"invalid metadata at line {line_number}: start_zone/end_zone must handle all drones in nb_drones")
+                raise ParserError(f"invalid metadata at line {line_number}: \
+start_zone/end_zone must handle all drones in nb_drones")
             if data['zone'] == 'blocked':
-                raise ParserError(f"invalid metadata at line {line_number}: start/end zones can't be blocked")
+                raise ParserError(f"invalid metadata at line {line_number}: \
+start/end zones can't be blocked")
         return data
 
     @staticmethod
@@ -95,7 +96,8 @@ class Parser:
             meta = meta.strip("[]").strip()
             meta = meta.lower()
             if meta.split('=', 1)[0] not in meta_default:
-                raise ParserError(f"invalid meta data at line {line_number}: '{line}'")
+                raise ParserError(f"invalid meta data at line \
+{line_number}: '{line}'")
         value = meta.split("=", 1)[1]
         try:
             value = int(value)
@@ -103,9 +105,7 @@ class Parser:
                 raise ValueError()
         except ValueError:
             raise ParserError(f"expected positive_integer for \
-                                max_link_capacity got {value} \
-                                at line {line_number}: value of \
-                                max link capacity must be positive-integer")
+max_link_capacity got '{value}' at line {line_number}")
 
         return meta
 
@@ -138,7 +138,7 @@ class Parser:
 
                     self.nb_drones_count = True 
 
-                    pattern = r"\s*(\w+):\s*(-?\d+)$"
+                    pattern = r"\s*(\w+):\s*([-+]?\d+)$"
                     match = re.match(pattern, line)
                     if not match:
                         raise ParserError(f"invalid line format at line {i}: '{line}'")
@@ -179,11 +179,12 @@ class Parser:
                     connection_pattern = (
                         r"(?P<type>\w+):"
                         r"(?P<value>\s*(?P<name1>\w+)-(?P<name2>\w+)\s*"
-                        r"(?:(?P<meta>\[\s*(max_link_capacity=-?\d+)\s*\]))?)\s*$")
+                        r"(?:(?P<meta>\[\s*(\w+=-?[^\s-]+)\s*\]))?)\s*$")
 
                     match = re.match(connection_pattern, line)
                     if not match:
-                        raise ParserError(f"invalid line format at line {i}: '{line}'")
+                        raise ParserError(
+                            f"invalid line format at line {i}: '{line}'")
 
                     self.data['connections'].append(
                         list(
@@ -200,19 +201,20 @@ class Parser:
             if not self.end:
                 raise ParserError("missing required field: 'end_hub'")
 
-
     def validate_nb_drones(self, line: int) -> None:
-            value = self.data['nb_drones']
-            try:
-                value = int(value)
-            except ValueError:
-                raise ParserError(f"expected integer for 'nb_drones' but got '{line}' nb_drones must be a positive-integer")
+        value = self.data['nb_drones']
+        try:
+            value = int(value)
+        except ValueError:
+            raise ParserError(f"expected integer for 'nb_drones' but got \
+'{line}' nb_drones must be a positive-integer")
 
-            if value <= 0:
-                raise ParserError(f"negative/zero value not allowed for 'nb_drones' at line {line}: \
-                                  nb_drones must be a positive-integer")
+        if value <= 0:
+            raise ParserError(f"negative/zero value not allowed \
+for 'nb_drones' at line {line}: \
+nb_drones must be a positive-integer")
 
-            self.data['nb_drones'] = value
+        self.data['nb_drones'] = value
 
     def validate(self) -> None:
 
@@ -230,33 +232,44 @@ class Parser:
                 meta = value['meta']
                 color = meta['color'].lower()
                 line = value['line']
-                if not color.lower() in CSS4_COLORS and color.lower() != "rainbow":
+                if color not in CSS4_COLORS and color != "rainbow":
                     if color == 'none':
                         pass
                     else:
-                        raise ParserError(f"unkown color '{color}' at line {line}")
+                        raise ParserError(
+                            f"unkown color '{color}' at line {line}")
                 max_drones = meta['max_drones']
                 try:
                     max_drones = int(max_drones)
                 except ValueError:
-                    raise ParserError(f"expected integer for 'max_drones' but got '{max_drones}' at line {line}")
+                    raise ParserError(f"expected integer for 'max_drones' \
+but got '{max_drones}' at line {line}")
 
         def validate_connections() -> None:
             data = self.data['connections']
             if not data:
-                raise ParserError("No connections provided, You must provide a connections between zones")
+                raise ParserError("No connections provided, \
+You must provide a connections between zones")
             edges = []
 
             for edge in data:
                 a, b, meta, line = edge
                 if a not in self.zones:
-                    raise ParserError(f"unknown zone '{a}' at line {line}: 'connection: {a}-{b}'")
+                    raise ParserError(f"unknown zone '{a}' at line {line}: \
+'connection: {a}-{b}'")
                 if b not in self.zones:
-                    raise ParserError(f"unkown zone '{b}' at line {line}: 'connection: {a}-{b}'")
+                    raise ParserError(f"unkown zone '{b}' at line {line}: \
+'connection: {a}-{b}'")
                 if a == b:
-                    raise ParserError(f"self connection not allowed for zone {a} at line {line}")
-                if {'left': a, 'right': b, 'max_capacity': int(meta.split('=')[1])} in edges or {'left': b, 'right': a, 'max_capacity': int(meta.split('=')[1])} in edges:
-                    raise ParserError(f"Duplicat connection '{a}-{b}' at line {line}")
+                    raise ParserError(f"self connection not allowed for zone \
+{a} at line {line}")
+                capacity = int(meta.split('=')[1])
+                edge_ab = {'left': a, 'right': b, 'max_capacity': capacity}
+                edge_ba = {'left': b, 'right': a, 'max_capacity': capacity}
+
+                if edge_ab in edges or edge_ba in edges:
+                    raise ParserError(f"Duplicat connection '{a}-{b}' \
+at line {line}")
                 edges.append({
                     'left': a,
                     'right': b,
