@@ -2,6 +2,8 @@ PY = python3
 
 UV = uv
 
+MAP ?= maps/easy/01_linear_path.txt
+
 MAIN = main.py
 
 FLAGS = --warn-return-any \
@@ -11,13 +13,13 @@ FLAGS = --warn-return-any \
 		--check-untyped-defs
 
 run :
-	@$(UV) run $(PY) $(MAIN)
+	@$(UV) run $(PY) $(MAIN) $(MAP)
 
 install :
 	@$(UV) sync
 
 debug :
-	@$(UV) run $(PY) -m pdb $(MAIN)
+	@$(UV) run $(PY) -m pdb $(MAIN) $(MAP)
 
 clean :
 	@find . -type d -name "__pycache__" -exec rm -rf {} +

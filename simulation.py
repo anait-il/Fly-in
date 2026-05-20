@@ -131,11 +131,13 @@ class Simulation:
                     continue
 
             if next_position == self.graph.end:
-                drone.is_finish = True
 
                 if next_position.zone == 'restricted':
+                    if drone.waiting:
+                        drone.is_finish = True
                     self.move_to_restricted(drone, next_position, connection)
                 else:
+                    drone.is_finish = True
                     self.move_drone(drone, next_position, connection)
                 result += f"D{drone.id}-{self.drone_position(drone)} "
 

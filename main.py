@@ -1,7 +1,5 @@
-import sys
+import os
 from parsing import Parser, ParserError
-from pprint import pprint
-from matplotlib.colors import CSS4_COLORS
 from graph_builder import Graph
 from Dijkstra import Dijkstra
 from simulation import Simulation
@@ -9,8 +7,10 @@ from simulation import Simulation
 if __name__ == "__main__":
     config = Parser()
     try:
-        #parsing part 
-        config.load_config("config.txt")
+        from matplotlib.colors import CSS4_COLORS
+        #parsing part
+        map_file = os.environ.get('MAP')
+        config.load_config(map_file)
         config.validate()
 
         #create graph
@@ -24,6 +24,11 @@ if __name__ == "__main__":
 
         sim = Simulation(map, algo)
         sim.execute()
+    except ImportError:
+        print('you must first install dependencies:')
+        print('use:')
+        print('     make install')
+
     except ParserError as e:
         print("[Error]:", e)
 

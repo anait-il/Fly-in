@@ -119,4 +119,7 @@ class Graph:
         print(self.connections)
     
     def get_connection(self, zone1: Zone, zone2: Zone) -> None:
-        return next((connection for connection in self.connections if connection.name == f"{zone1.name}-{zone2.name}"))
+        return next((connection
+                     for connection in self.connections
+                     if connection.name == f"{zone1.name}-{zone2.name}"
+                     or connection.name == f"{zone2.name}-{zone1.name}"))
