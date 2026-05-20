@@ -4,6 +4,8 @@ UV = uv
 
 MAP ?= maps/easy/01_linear_path.txt
 
+FILE ?= .
+
 MAIN = main.py
 
 FLAGS = --warn-return-any \
@@ -27,5 +29,5 @@ clean :
 	@find . -type d -name ".mypy_cache" -exec rm -rf {} +
 
 lint :
-	@flake8 .
-	@mypy .  $(FLAGS)
+	@$(UV) run flake8 $(FILE)
+	@$(UV) run mypy $(FILE) $(FLAGS)
