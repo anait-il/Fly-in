@@ -265,5 +265,13 @@ class Simulation:
         print()
         while not all((drone.is_finish for drone in self.drones)):
             count += 1
-            print(self.run_turn(), end="\n\n")
+            result: str = self.run_turn()
+            self.get_output(result, count)
         print(Color.GREEN.value + f"Total Turns: {count}" + Color.RESET.value)
+    
+    def get_output(self, result: str, count: int) -> None:
+        moves = result.split()
+        print(f'==== Turn {count} ====\n')
+        for move in moves:
+            print(move)
+        print()

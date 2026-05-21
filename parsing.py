@@ -177,6 +177,8 @@ class Parser:
         else:
             meta = meta.strip("[]").strip()
             meta = meta.lower()
+            if not meta:
+                meta = 'max_link_capacity=1'
             if meta.split('=', 1)[0] not in meta_default:
                 raise ParserError("invalid meta data at line "
                                   f"{line_number}: '{line}'")
