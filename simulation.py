@@ -129,7 +129,7 @@ class Simulation:
         self.drones = drones
 
     @staticmethod
-    def move_to_restricted(drone,
+    def move_to_restricted(drone: Drone,
                            next_position: Zone,
                            connection: Connection) -> None:
         """Handles movement into restricted zones.
@@ -154,11 +154,12 @@ class Simulation:
             next_position.enter(drone)
             drone.connection = connection
             connection.enter(drone)
-            drone.position.leave(drone)
+            position: Zone = drone.position
+            position.leave(drone)
             drone.position = None
 
     @staticmethod
-    def drone_position(drone) -> str:
+    def drone_position(drone: Drone) -> str:
         """Returns readable drone position or connection."""
 
         return (drone.position
@@ -166,7 +167,7 @@ class Simulation:
                 else f"<{drone.connection}>")
 
     @staticmethod
-    def move_drone(drone, next_position: Zone, connection: Connection) -> None:
+    def move_drone(drone: Drone, next_position: Zone, connection: Connection) -> None:
         """Moves a drone to the next zone.
 
         Args:
@@ -199,12 +200,13 @@ class Simulation:
 
             if drone.is_finish:
                 continue
-
-            next_position = drone.path.path[drone.index + 1]
+            
+            path: Path = drone.path
+            next_position = path.path[drone.index + 1]
             if next_position.zone == 'restricted' and drone.waiting:
-                connection = drone.connection
+                connection: Connection = drone.connection
             else:
-                connection: Connection = self.graph.get_connection(
+                connection = self.graph.get_connection(
                     (drone.position,
                      next_position))
                 if next_position.is_full() or connection.is_full():
