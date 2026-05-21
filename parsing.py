@@ -48,7 +48,6 @@ class Parser:
                     raise ParserError(f"Duplicate metadata {key} at "
                                       f"line {line_number}: '{line}'")
                 if key not in default_values:
-                    print(key, value)
                     raise ParserError(f"unknown metadata {key} at "
                                       f"line {line_number}: '{item}'")
                 meta_dict[key] = value
@@ -116,7 +115,6 @@ class Parser:
             raise ParserError(f"expected positive_integer for "
                               f"max_link_capacity got '{value}' at "
                               f"line {line_number}")
-        print(meta)
         return meta
 
     def load_config(self, config_file: str) -> None:

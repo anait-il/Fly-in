@@ -3,11 +3,11 @@ from parsing import ParserError
 from typing import List, Dict
 import heapq
 from itertools import count
-from pprint import pprint
 
 
 class Dijkstra:
-    """Find shortest and alternative paths in a weighted graph.
+    """
+    Find shortest and alternative paths in a weighted graph.
 
     This class implements a modified version of the Dijkstra algorithm
     to compute the shortest path between a start hub and an end hub.
@@ -36,7 +36,8 @@ class Dijkstra:
     """
 
     def __init__(self, graph: Graph) -> None:
-        """Initialize the Dijkstra solver.
+        """
+        Initialize the Dijkstra solver.
 
         Args:
             graph (Graph):
@@ -50,7 +51,8 @@ class Dijkstra:
         self.paths: List[List[Zone]] = []
 
     def shortest_path(self) -> None:
-        """Compute the shortest path from start hub to end hub.
+        """
+        Compute the shortest path from start hub to end hub.
 
         Uses a priority queue (heap) to explore the graph while tracking
         the minimum known cost to each zone.
@@ -70,11 +72,11 @@ class Dijkstra:
 
         heap: List = [(0, 0, 0, start)]
         privous: Dict = {}
-        unique: int = count()
+        unique: count[int] = count()
         costs = {zone: float("infinity") for zone in self.graph}
         costs[self.map['start_hub']] = 0
 
-        def get_neighbors(zone: Zone) -> None:
+        def get_neighbors(zone: Zone) -> List[Zone]:
             """Return all reachable neighbors of a zone.
 
             Blocked zones are ignored.
@@ -90,8 +92,8 @@ class Dijkstra:
 
             neighbors: List = []
             for con in self.graph[zone]:
-                other = con.get_other(zone)
-                other = self.object_graph.zone_map[other]
+                other_name: str = con.get_other(zone)
+                other: Zone = self.object_graph.zone_map[other_name]
                 if other.zone == 'blocked':
                     continue
                 neighbors.append(other)
@@ -105,8 +107,8 @@ class Dijkstra:
                 new_cost = neighbor.cost + costs[current]
                 if new_cost < costs[neighbor]:
                     heapq.heappush(heap, (priority, new_cost,
-                                        next(unique),
-                                        neighbor))
+                                          next(unique),
+                                          neighbor))
                     privous[neighbor] = current
                     costs[neighbor] = new_cost
 
@@ -114,14 +116,17 @@ class Dijkstra:
                 break
 
         if self.map['end_hub'] not in privous:
-            raise ParserError('No path exists to goal — network is disconnected!')
+            raise ParserError('No path exists to goal — '
+                              'network is disconnected!')
         current = self.map['end_hub']
         while current is not None:
             self.path.append(current)
             current = privous.get(current)
         self.path.reverse()
 
-    def get_connections_from_path(self, path, connections=[]) -> None:
+    def get_connections_from_path(self,
+                                  path: List[Zone],
+                                  connections: List[List[Connection]]) -> None:
         """Convert a path of zones into graph connections.
 
         Args:
@@ -139,19 +144,19 @@ class Dijkstra:
 
         connection: List = []
         for i in range(len(path)-1):
-            connection.append(self.object_graph.get_connection(path[i], path[i+1]))
+            connection.append(self.object_graph.get_connection(path[i],
+                                                               path[i+1]))
         connections.append(connection)
-        return connections
 
     def get_multi_paths(self) -> None:
-        paths: List = []
-        connections = []
+        paths: List[List[Zone]] = []
+        connections: List[List[Connection]] = []
         while True:
             self.shortest_path()
             if self.path in paths:
                 break
             paths.append(self.path)
-            connections = self.get_connections_from_path(self.path)
+            self.get_connections_from_path(self.path, connections)
             for zone in self.path:
                 zone.cost += 2
             self.path = []
