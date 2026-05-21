@@ -21,7 +21,6 @@ if __name__ == "__main__":
         config.validate()
 
         # create graph
-        print(config.data['connections'])
         map = Graph(config.data)
         map.create_zone_and_connection()
         map.create_graph()
@@ -38,6 +37,6 @@ if __name__ == "__main__":
 
     except OSError as e:
         print(f"[File Error]: {e}")
-    
+
     except Exception as e:
         print(f"Error: {e}")

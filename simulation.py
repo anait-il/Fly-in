@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, cast
 from graph_builder import Zone, Connection, Graph
 from enum import Enum
 from Dijkstra import Dijkstra
@@ -45,7 +45,7 @@ class Drone:
 
         self.index: int = 0
         self.id: int = id
-        self.path: List = []
+        self.path: Path | None = None
         self.position: Zone | None = None
         self.connection: Connection | None = None
         self.is_finish: bool = False
@@ -115,9 +115,10 @@ class Simulation:
             path.cost = sum(zone.cost for zone in path.path)
 
         for drone in self.drones:
-            drone.path = (
+            min_path: Path = (
                 min(self.paths,
                     key=lambda p: (p.cost + (p.drones_in_path/p.throughput))))
+            drone.path = min_path
             drone.path.add_drone()
             drone.position = self.graph.start
             drone.position.enter(drone)
@@ -154,12 +155,12 @@ class Simulation:
             next_position.enter(drone)
             drone.connection = connection
             connection.enter(drone)
-            position: Zone = drone.position
+            position: Zone = cast(Zone, drone.position)
             position.leave(drone)
             drone.position = None
 
     @staticmethod
-    def drone_position(drone: Drone) -> str:
+    def drone_position(drone: Drone) -> Zone | str:
         """Returns readable drone position or connection."""
 
         return (drone.position
@@ -167,7 +168,9 @@ class Simulation:
                 else f"<{drone.connection}>")
 
     @staticmethod
-    def move_drone(drone: Drone, next_position: Zone, connection: Connection) -> None:
+    def move_drone(drone: Drone,
+                   next_position: Zone,
+                   connection: Connection) -> None:
         """Moves a drone to the next zone.
 
         Args:
@@ -180,14 +183,15 @@ class Simulation:
             drone.ex.max_drones -= 1
             drone.ex = None
 
-        drone.position.leave(drone)
+        position: Zone = cast(Zone, drone.position)
+        position.leave(drone)
         drone.position = next_position
         drone.position.enter(drone)
         connection.enter(drone)
         drone.connection = connection
         drone.index += 1
 
-    def run_turn(self) -> None:
+    def run_turn(self) -> str:
         """Executes a single simulation turn.
 
         Returns:
@@ -200,15 +204,16 @@ class Simulation:
 
             if drone.is_finish:
                 continue
-            
-            path: Path = drone.path
+
+            path: Path = cast(Path, drone.path)
+            position: Zone = cast(Zone, drone.position)
             next_position = path.path[drone.index + 1]
+
             if next_position.zone == 'restricted' and drone.waiting:
-                connection: Connection = drone.connection
+                connection: Connection = cast(Connection, drone.connection)
             else:
-                connection = self.graph.get_connection(
-                    (drone.position,
-                     next_position))
+                connection = self.graph.get_connection(position,
+                                                       next_position)
                 if next_position.is_full() or connection.is_full():
                     continue
 
@@ -237,9 +242,9 @@ class Simulation:
             if drone.waiting:
                 continue
 
-            dr_in_con: bool = drone in drone.connection.drones_in_connection
-            if drone.connection and dr_in_con:
+            if drone.connection:
                 drone.connection.leave(drone)
+                drone.connection = None
 
         return result
 

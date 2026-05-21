@@ -4,7 +4,7 @@ UV = uv
 
 MAP ?= maps/easy/01_linear_path.txt
 
-FILE ?= .
+FILE ?= *.py
 
 MAIN = main.py
 

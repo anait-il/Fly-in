@@ -5,12 +5,37 @@ from typing import Match, Dict, Tuple
 
 
 class ParserError(Exception):
+    """Custom exception raised for parser-related errors."""
     ...
 
 
 class Parser:
+    """Parse and validate drone simulation configuration files.
+
+    Attributes:
+        lines (str | None):
+            Raw file content.
+
+        data (Dict):
+            Parsed configuration data containing drones,
+            zones, and connections.
+
+        line_count (int):
+            Number of processed lines.
+
+        start (bool):
+            Whether a start hub was declared.
+
+        end (bool):
+            Whether an end hub was declared.
+
+        zones (list[str]):
+            List of declared zone names.
+    """
+
     def __init__(self) -> None:
-        self.lines: str | None = None
+        """Initialize parser state and configuration storage."""
+
         self.data: Dict = {
             "nb_drones": None,
             "zones": {},
@@ -27,6 +52,34 @@ class Parser:
                         line: str,
                         nb_drones: int,
                         line_number: int) -> dict:
+        """Parse and validate zone metadata.
+
+        Args:
+            match (Match):
+                Regex match object containing parsed zone information.
+
+            line (str):
+                Original configuration line.
+
+            nb_drones (int):
+                Total number of drones declared in the configuration.
+
+            line_number (int):
+                Current line number in the configuration file.
+
+        Returns:
+            dict:
+                Parsed metadata dictionary containing:
+                    - color (str)
+                    - zone (str)
+                    - max_drones (int)
+
+        Raises:
+            ParserError:
+                If metadata is invalid, duplicated, or contains
+                unsupported values.
+        """
+
         default_values = ("color", 'max_drones', 'zone')
         default_meta = ('normal', 'blocked', 'restricted', 'priority')
         data: dict = {}
@@ -95,6 +148,27 @@ class Parser:
 
     @staticmethod
     def con_meta_split(match: Match, line: str, line_number: int) -> str:
+        """Parse and validate connection metadata.
+
+        Args:
+            match (Match):
+                Regex match object containing parsed connection data.
+
+            line (str):
+                Original configuration line.
+
+            line_number (int):
+                Current line number in the configuration file.
+
+        Returns:
+            str:
+                Validated connection metadata string.
+
+        Raises:
+            ParserError:
+                If metadata format or values are invalid.
+        """
+
         meta_default = ["max_link_capacity"]
 
         meta: str = match.group("meta")
@@ -117,8 +191,22 @@ class Parser:
                               f"line {line_number}")
         return meta
 
-    def load_config(self, config_file: str) -> None:
-        if os.path.getsize('config.txt') == 0:
+    def load_config(self, config_file: str | None) -> None:
+        """Load and parse a drone simulation configuration file.
+
+        Args:
+            config_file (str | None):
+                Path to the configuration file.
+
+        Raises:
+            ParserError:
+                If the file is missing, empty, malformed,
+                or contains invalid configuration data.
+        """
+
+        if not config_file:
+            raise ParserError("no such file")
+        if os.path.getsize(config_file) == 0:
             raise ParserError("empty file")
 
         with open(config_file) as file:
@@ -131,7 +219,7 @@ class Parser:
 
                 self.line_count += 1
                 if self.line_count == 1:
-                    if not line.lower().startswith("nb_drones"):
+                    if not line.lower().strip().startswith("nb_drones"):
                         raise ParserError("missing required field in "
                                           f"line {i}: nb_drones must be "
                                           "the first line")
@@ -149,7 +237,7 @@ class Parser:
 
                     self.nb_drones_count = True
 
-                    pattern = r"\s*(\w+):\s*([-+]?\d+)$"
+                    pattern = r"\s*(\w+)\s*:\s*([-+]?\d+)$"
                     match = re.match(pattern, line)
                     if not match:
                         raise ParserError("invalid line format at line "
@@ -159,13 +247,13 @@ class Parser:
 
                 elif line.lower().startswith(hubs):
                     zone_pattern = (
-                        r"^(?P<type>\w+)\s*:"
+                        r"\s*(?P<type>\w+)\s*:"
                         r"(?P<value>"
                         r"\s*(?P<name>\w+)\s+"
-                        r"(?P<x>-?\d+)\s+"
-                        r"(?P<y>-?\d+)\s*"
-                        r"(?:(?P<meta>\[\s*(?:\w+=-?[^\s-]+)"
-                        r"(?:\s+\w+=-?[^\s-]+)*\s*\]))?"
+                        r"(?P<x>[-+]?\d+)\s+"
+                        r"(?P<y>[+-]?\d+)\s*"
+                        r"(?:(?P<meta>\[(\s*(?:\w+=-?[^\s-]+)"
+                        r"(?:\s+\w+=-?[^\s-]+)*\s*)?\]))?"
                         r")\s*$")
 
                     match = re.match(zone_pattern, line)
@@ -198,9 +286,9 @@ class Parser:
 
                 elif line.lower().startswith("connection"):
                     connection_pattern = (
-                        r"(?P<type>\w+):"
+                        r"\s*(?P<type>\w+)\s*:"
                         r"(?P<value>\s*(?P<name1>\w+)-(?P<name2>\w+)\s*"
-                        r"(?:(?P<meta>\[\s*(\w+=-?[^\s-]+)\s*\]))?)\s*$")
+                        r"(?:(?P<meta>\[(\s*(\w+=-?[^\s-]+)\s*)?\]))?)\s*$")
 
                     match = re.match(connection_pattern, line)
                     if not match:
@@ -223,6 +311,17 @@ class Parser:
                 raise ParserError("missing required field: 'end_hub'")
 
     def validate_nb_drones(self, line: int) -> None:
+        """Validate the number of drones declared in the configuration.
+
+        Args:
+            line (int):
+                Line number containing the nb_drones field.
+
+        Raises:
+            ParserError:
+                If nb_drones is not a positive integer.
+        """
+
         value = self.data['nb_drones']
         try:
             value = int(value)
@@ -238,11 +337,32 @@ class Parser:
         self.data['nb_drones'] = value
 
     def validate(self) -> None:
+        """Validate parsed zones and connections.
+
+        This method validates:
+            - Zone coordinates
+            - Zone metadata
+            - Connection integrity
+            - Duplicate/self connections
+            - Connection capacities
+
+        Raises:
+            ParserError:
+                If any validation rule fails.
+        """
 
         def validate_zones() -> None:
-            def validate_coordinate() -> None:
-                for name, value in data.items():
-                    x, y = value['']
+            """Validate all declared zones.
+
+            Checks:
+                - Coordinate validity
+                - Color validity
+                - max_drones type and value
+
+            Raises:
+                ParserError:
+                    If zone data is invalid.
+            """
 
             data = self.data['zones']
             for _, value in data.items():
@@ -267,6 +387,19 @@ class Parser:
                                       f"but got '{max_drones}' at line {line}")
 
         def validate_connections() -> None:
+            """Validate all declared connections.
+
+            Checks:
+                - Unknown zones
+                - Self connections
+                - Duplicate connections
+                - Connection capacities
+
+            Raises:
+                ParserError:
+                    If any connection is invalid.
+            """
+
             data = self.data['connections']
             if not data:
                 raise ParserError("No connections provided, "
