@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import List, Dict, Tuple, TYPE_CHECKING, cast
+from matplotlib.colors import CSS4_COLORS
 
 
 if TYPE_CHECKING:
@@ -88,6 +89,22 @@ class Zone:
 
         self.drones_in_zone.remove(drone)
 
+    def rainbow(self) -> str:
+        colors = [
+            'red',
+            'blue',
+            'yellow',
+            'green',
+            'rose',
+            'violet',
+            'cyan'
+        ]
+        result: str = ""
+        for i, char in enumerate(self.name):
+            clr = colors[i % len(colors)]
+            result += f"[{clr}]{char}[/{clr}]"
+        return result
+
 
 class Connection:
     """Represents a connection between two zones."""
@@ -104,7 +121,6 @@ class Connection:
         self.name: str = f"{self.zone_a}-{self.zone_b}"
         self.max_capacity: int = cast(int, data['max_capacity'])
         self.drones_in_connection: List[Drone] = []
-        self.color: str = "blue"
 
     def enter(self, drone: Drone) -> None:
         """Adds a drone to the connection.
@@ -167,8 +183,6 @@ class Graph:
         """Builds the adjacency graph."""
 
         connections: List[Connection] = self.connections
-        self.zone_map: Dict[str, Zone] = {zone.name: zone
-                                          for zone in self.zones}
 
         graph: Dict[Zone, List[Connection]] = {}
         for zone in self.zones:
@@ -195,12 +209,25 @@ class Graph:
             (zone for zone in self.zones if zone.kind == 'end_hub'))
         self.start: Zone = next(
             (zone for zone in self.zones if zone.kind == 'start_hub'))
+        self.zone_map: Dict[str, Zone] = {zone.name: zone
+                                          for zone in self.zones}
 
     def create_connection(self) -> None:
         """Creates graph connections."""
+        def get_zone_with_color(zone: Zone) -> str:
+            if zone.color == 'rainbow':
+                return zone.rainbow()
+            hexa_color: str = CSS4_COLORS[zone.color]
+            return f"[{hexa_color}] {zone.name} [/{hexa_color}]"
+
+        def set_color(connection: Connection) -> str:
+            return f"{get_zone_with_color(self.zone_map[connection.zone_a])}-{get_zone_with_color(self.zone_map[connection.zone_b])}"
 
         for con in self.data['connections']:
-            self.connections.append(Connection(con))
+            connection = Connection(con)
+            self.connections.append(connection)
+            connection._con_with_color = set_color(connection)
+        
 
     def create_zone_and_connection(self) -> None:
         """Creates zones and connections."""

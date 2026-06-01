@@ -4,6 +4,7 @@ from typing import List, cast
 from graph_builder import Zone, Connection, Graph
 from enum import Enum
 from Dijkstra import Dijkstra
+from matplotlib.colors import CSS4_COLORS
 
 
 class Color(Enum):
@@ -165,11 +166,14 @@ class Simulation:
     def drone_position(drone: Drone) -> str:
         """Returns readable drone position or connection."""
         if drone.position:
-            return (f"[{drone.position.color}]{drone.position}"
-                   f"[/{drone.position.color}]")
+            if drone.position.color == "rainbow":
+                return drone.position.rainbow()
+            hexa_color: str = CSS4_COLORS[drone.position.color]
+            return (f"[{hexa_color}]{drone.position}"
+                   f"[/{hexa_color}]")
         else:
-
-            return (f"<{drone.connection}>")
+            
+            return  drone.connection._con_with_color
 
     @staticmethod
     def move_drone(drone: Drone,
