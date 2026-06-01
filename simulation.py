@@ -1,3 +1,5 @@
+from rich.console import Console
+from rich import print
 from typing import List, cast
 from graph_builder import Zone, Connection, Graph
 from enum import Enum
@@ -160,12 +162,14 @@ class Simulation:
             drone.position = None
 
     @staticmethod
-    def drone_position(drone: Drone) -> Zone | str:
+    def drone_position(drone: Drone) -> str:
         """Returns readable drone position or connection."""
+        if drone.position:
+            return (f"[{drone.position.color}]{drone.position}"
+                   f"[/{drone.position.color}]")
+        else:
 
-        return (drone.position
-                if drone.position
-                else f"<{drone.connection}>")
+            return (f"<{drone.connection}>")
 
     @staticmethod
     def move_drone(drone: Drone,
@@ -226,7 +230,8 @@ class Simulation:
                 else:
                     drone.is_finish = True
                     self.move_drone(drone, next_position, connection)
-                result += f"D{drone.id}-{self.drone_position(drone)} "
+                result += (f"[bold blue]D{drone.id}[/bold blue]-"
+                          f"{self.drone_position(drone)}\n")
 
             else:
 
@@ -236,7 +241,8 @@ class Simulation:
                 else:
                     self.move_drone(drone, next_position, connection)
 
-                result += f"D{drone.id}-{self.drone_position(drone)} "
+                result += (f"[bold blue]D{drone.id}[/bold blue]-"
+                          f"{self.drone_position(drone)}\n")
 
         for drone in self.drones:
             if drone.waiting:
@@ -267,11 +273,10 @@ class Simulation:
             count += 1
             result: str = self.run_turn()
             self.get_output(result, count)
-        print(Color.GREEN.value + f"Total Turns: {count}" + Color.RESET.value)
-    
-    def get_output(self, result: str, count: int) -> None:
-        moves = result.split()
-        print(f'==== Turn {count} ====\n')
-        for move in moves:
-            print(move)
+        print(f"[bold green]Total turns: {count}[/bold green]")
+
+    def get_output(self, moves: str, count: int) -> None:
+        console = Console()
+        console.print(f'==== [bold]Turn[/bold] [bold blue]{count}[/bold blue] ====\n')
+        console.print(moves)
         print()

@@ -1,10 +1,12 @@
 try:
+    import sys
     import os
     from parsing import Parser, ParserError
     from graph_builder import Graph
     from Dijkstra import Dijkstra
     from simulation import Simulation
-except ImportError:
+except ImportError as e:
+    print(e)
     print("""You must first install depencies.
 Install it with:
             > make install
@@ -30,7 +32,18 @@ if __name__ == "__main__":
         algo.get_multi_paths()
 
         sim = Simulation(map, algo)
-        sim.execute()
+        # sim.execute()
+        sim.create_drones()
+        sim.set_paths()
+
+        if '--visual' in sys.argv:
+        # import and run visualizer
+            from visualizer import Visualizer
+            viz = Visualizer(sim, map)
+            viz.run()
+        else:
+        # your existing terminal mode
+            sim.execute()
 
     except ParserError as e:
         print("[Error]:", e)

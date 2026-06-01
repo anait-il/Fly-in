@@ -18,6 +18,10 @@ run :
 	@echo "MAP is: $(MAP)\n"
 	@MAP=$(MAP) $(UV) run $(PY) $(MAIN)
 
+
+visual :
+	@MAP=$(MAP) $(UV) run $(PY) $(MAIN) --visual
+
 install :
 	@$(UV) sync
 

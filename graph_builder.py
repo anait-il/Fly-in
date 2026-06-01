@@ -33,6 +33,7 @@ class Zone:
         self.max_drones: int = max_drones
         self.color: str = color
         self.coordinate: Tuple[int, int] = coordinate
+        self.x, self.y = coordinate
         self.cost: int = self.set_cost(zone)
         self.visited: bool = False
         self.drones_in_zone: List[Drone] = []
@@ -103,6 +104,7 @@ class Connection:
         self.name: str = f"{self.zone_a}-{self.zone_b}"
         self.max_capacity: int = cast(int, data['max_capacity'])
         self.drones_in_connection: List[Drone] = []
+        self.color: str = "blue"
 
     def enter(self, drone: Drone) -> None:
         """Adds a drone to the connection.
@@ -127,7 +129,7 @@ class Connection:
 
         return len(self.drones_in_connection) == self.max_capacity
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         """Returns the connection representation."""
 
         return f"{self.zone_a}-{self.zone_b}"
