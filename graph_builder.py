@@ -217,6 +217,8 @@ class Graph:
         def get_zone_with_color(zone: Zone) -> str:
             if zone.color == 'rainbow':
                 return zone.rainbow()
+            if zone.color == 'none':
+                zone.color = 'white'
             hexa_color: str = CSS4_COLORS[zone.color]
             return f"[{hexa_color}] {zone.name} [/{hexa_color}]"
 

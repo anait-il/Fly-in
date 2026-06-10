@@ -51,5 +51,5 @@ if __name__ == "__main__":
     except OSError as e:
         print(f"[File Error]: {e}")
 
-    except Exception as e:
-        print(f"Error: {e}")
+    # except Exception as e:
+    #     print(f"Error: {e}")
