@@ -33,8 +33,6 @@ if __name__ == "__main__":
 
         sim = Simulation(map, algo)
         # sim.execute()
-        sim.create_drones()
-        sim.set_paths()
 
         if '--visual' in sys.argv:
         # import and run visualizer

@@ -256,14 +256,6 @@ class Simulation:
 
         count: int = 0
 
-        self.create_drones()
-        self.set_paths()
-        while not all((drone.is_finish for drone in self.drones)):
-            count += 1
-            result: str = self.run_turn()
-            self.get_output(result, count)
-        print(f"[bold green]Total turns: {count}[/bold green]")
-
         for i, path in enumerate(self.paths, start=1):
             way = ""
             for zone in path.path:
@@ -272,6 +264,15 @@ class Simulation:
             way = f'[yellow]{way}[/]'
             print(f"path{i}: {way}")
         print()
+
+        self.create_drones()
+        self.set_paths()
+        while not all((drone.is_finish for drone in self.drones)):
+            count += 1
+            result: str = self.run_turn()
+            self.get_output(result, count)
+        print(f"[bold green]Total turns: {count}[/bold green]")
+
     def get_output(self, moves: str, count: int) -> None:
         console = Console()
         console.print(f'==== [bold]Turn[/bold] [bold blue]{count}[/bold blue] ====\n')
