@@ -36,6 +36,8 @@ if __name__ == "__main__":
 
         if '--visual' in sys.argv:
         # import and run visualizer
+            sim.create_drones()
+            sim.set_paths()
             from visualizer import Visualizer
             viz = Visualizer(sim, map)
             viz.run()
