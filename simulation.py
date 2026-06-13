@@ -7,13 +7,6 @@ from Dijkstra import Dijkstra
 from matplotlib.colors import CSS4_COLORS
 
 
-class Color(Enum):
-    RED = "\x1b[31m"
-    BLUE = "\x1b[34m"
-    RESET = "\x1b[0m"
-    GREEN = "\x1b[32m"
-    YELLOW = "\x1b[33m"
-
 
 class Path:
     """Represents a path consisting of zones for drones to follow."""
@@ -265,20 +258,20 @@ class Simulation:
 
         self.create_drones()
         self.set_paths()
-        for i, path in enumerate(self.paths, start=1):
-            way = ""
-            for zone in path.path:
-                way += ' -> ' if way else ''
-                way += f"{zone}"
-            way = Color.YELLOW.value + way + Color.RESET.value
-            print(f"path{i}: {way}")
-        print()
         while not all((drone.is_finish for drone in self.drones)):
             count += 1
             result: str = self.run_turn()
             self.get_output(result, count)
         print(f"[bold green]Total turns: {count}[/bold green]")
 
+        for i, path in enumerate(self.paths, start=1):
+            way = ""
+            for zone in path.path:
+                way += ' -> ' if way else ''
+                way += f"{zone}"
+            way = f'[yellow]{way}[/]'
+            print(f"path{i}: {way}")
+        print()
     def get_output(self, moves: str, count: int) -> None:
         console = Console()
         console.print(f'==== [bold]Turn[/bold] [bold blue]{count}[/bold blue] ====\n')
